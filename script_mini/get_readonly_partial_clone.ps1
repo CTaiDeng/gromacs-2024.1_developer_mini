@@ -47,6 +47,50 @@ $IncludePaths = @(
     'AGENTS.md'
 )
 
+# 排除清单：以下相对路径在只读同步时不被远端覆盖或删除（始终以本地版本为准）
+$ExcludeFiles = @(
+    '.githooks/prepare-commit-msg',
+    '.githooks/prepare-commit-msg.bat',
+    'my_scripts/gen_commit_msg_googleai.py'
+)
+
+function Canonical-Rel([string]$RelPath) {
+    if (-not $RelPath) { return '' }
+    $p = $RelPath.Replace('/', '\\').TrimStart('\\')
+    return $p.ToLowerInvariant()
+}
+
+function Is-Excluded([string]$FullPath) {
+    $rel = Make-Rel $FullPath
+    $relNorm = Canonical-Rel $rel
+    foreach ($e in $ExcludeFiles) {
+        $eNorm = Canonical-Rel $e
+        if ($relNorm -eq $eNorm) { return $true }
+    }
+    return $false
+}
+
+# 从源（临时稀疏克隆目录）中删除被排除的文件，避免进入比对/复制流程
+function Remove-Excluded-In-Source([string]$RelRoot) {
+    $rootNorm = Canonical-Rel $RelRoot
+    foreach ($e in $ExcludeFiles) {
+        $eNorm = Canonical-Rel $e
+        if ($eNorm.StartsWith($rootNorm)) {
+            $srcPath = Join-Path $TmpDir $e
+            if (Test-Path -LiteralPath $srcPath) {
+                try {
+                    Remove-Item -LiteralPath $srcPath -Force -ErrorAction SilentlyContinue
+                    # 仅输出仓库相对路径，避免出现临时目录前缀
+                    $disp = Canonical-Rel $e
+                    Write-Info ("Skip source (excluded): {0}" -f $disp)
+                } catch {
+                    # 忽略
+                }
+            }
+        }
+    }
+}
+
 function Ensure-Git() {
     try { git --version | Out-Null } catch { throw '未检测到 git，请先安装并确保在 PATH 中。' }
 }
@@ -118,12 +162,26 @@ function Sync-Directory([string]$SrcDir, [string]$DstDir) {
     $dstMap = @{}
     foreach ($c in $dstChildren) { $dstMap[$c.Name.ToLower()] = $c }
 
-    # 删除多余项
+    # 删除多余项（跳过排除文件）
     foreach ($k in $dstMap.Keys) {
         if (-not $srcMap.ContainsKey($k)) {
             $toRemove = $dstMap[$k]
-            Remove-Item -LiteralPath $toRemove.FullName -Recurse -Force -ErrorAction SilentlyContinue
-            Write-Info ("Deleted: {0}" -f (Make-Rel $toRemove.FullName))
+            $excluded = $false
+            if (Is-Excluded $toRemove.FullName) { $excluded = $true }
+            else {
+                # 兜底：按文件名匹配到排除列表（防御路径归一化问题）
+                $name = $toRemove.Name.ToLowerInvariant()
+                foreach ($e in $ExcludeFiles) {
+                    $en = [System.IO.Path]::GetFileName((Canonical-Rel $e)).ToLowerInvariant()
+                    if ($en -eq $name) { $excluded = $true; break }
+                }
+            }
+            if ($excluded) {
+                Write-Info ("Skip delete (excluded): {0}" -f (Make-Rel $toRemove.FullName))
+            } else {
+                Remove-Item -LiteralPath $toRemove.FullName -Recurse -Force -ErrorAction SilentlyContinue
+                Write-Info ("Deleted: {0}" -f (Make-Rel $toRemove.FullName))
+            }
         }
     }
 
@@ -135,11 +193,28 @@ function Sync-Directory([string]$SrcDir, [string]$DstDir) {
             if (Test-Path -LiteralPath $dFull) {
                 $dItem = Get-Item -LiteralPath $dFull
                 if (-not $dItem.PSIsContainer) {
-                    Remove-Item -LiteralPath $dFull -Recurse -Force -ErrorAction SilentlyContinue
+                    if (Is-Excluded $dFull) {
+                        Write-Info ("Skip replace dir (excluded target): {0}" -f (Make-Rel $dFull))
+                    } else {
+                        Remove-Item -LiteralPath $dFull -Recurse -Force -ErrorAction SilentlyContinue
+                    }
                 }
             }
             Sync-Directory $s.FullName $dFull
         } else {
+            $excluded = $false
+            if (Is-Excluded $dFull) { $excluded = $true }
+            else {
+                $name = [System.IO.Path]::GetFileName($dFull).ToLowerInvariant()
+                foreach ($e in $ExcludeFiles) {
+                    $en = [System.IO.Path]::GetFileName((Canonical-Rel $e)).ToLowerInvariant()
+                    if ($en -eq $name) { $excluded = $true; break }
+                }
+            }
+            if ($excluded) {
+                Write-Info ("Skip update (excluded): {0}" -f (Make-Rel $dFull))
+                continue
+            }
             if (Test-Path -LiteralPath $dFull) {
                 $dItem = Get-Item -LiteralPath $dFull
                 if ($dItem.PSIsContainer) {
@@ -168,6 +243,9 @@ function Sync-Path([string]$Rel) {
     # 解除只读，以便更新
     Clear-ReadOnly-Target $Rel
 
+    # 先从源侧剔除排除文件，确保后续不同步
+    Remove-Excluded-In-Source $Rel
+
     if (Test-Path -LiteralPath $src) {
         if (Test-Path -LiteralPath $src -PathType Container) {
             if (Test-Path -LiteralPath $dst) {
@@ -176,7 +254,19 @@ function Sync-Path([string]$Rel) {
             }
             Sync-Directory $src $dst
         } else {
-            if (Test-Path -LiteralPath $dst) {
+            $excluded = $false
+            if (Is-Excluded $dst) { $excluded = $true }
+            else {
+                $name = [System.IO.Path]::GetFileName($dst).ToLowerInvariant()
+                foreach ($e in $ExcludeFiles) {
+                    $en = [System.IO.Path]::GetFileName((Canonical-Rel $e)).ToLowerInvariant()
+                    if ($en -eq $name) { $excluded = $true; break }
+                }
+            }
+            if ($excluded) {
+                Write-Info ("Skip update (excluded): {0}" -f (Make-Rel $dst))
+            } else {
+                if (Test-Path -LiteralPath $dst) {
                 $dItem = Get-Item -LiteralPath $dst
                 if ($dItem.PSIsContainer) { Remove-Item -LiteralPath $dst -Recurse -Force -ErrorAction SilentlyContinue }
                 if (Files-Differ $src $dst) {
@@ -184,17 +274,45 @@ function Sync-Path([string]$Rel) {
                     Copy-Item -LiteralPath $src -Destination $dst -Force
                     Write-Info ("Updated: {0}" -f (Make-Rel $dst))
                 }
-            } else {
+                } else {
                 Ensure-Dir (Split-Path -Parent $dst)
                 Copy-Item -LiteralPath $src -Destination $dst -Force
                 Write-Info ("Added: {0}" -f (Make-Rel $dst))
+                }
             }
         }
     } else {
-        # 远端不存在该路径，本地若存在则删除
+        # 远端不存在该路径，本地若存在则删除（跳过排除文件）
         if (Test-Path -LiteralPath $dst) {
-            Remove-Item -LiteralPath $dst -Recurse -Force -ErrorAction SilentlyContinue
-            Write-Info ("Deleted (missing upstream): {0}" -f (Make-Rel $dst))
+            if (Test-Path -LiteralPath $dst -PathType Container) {
+                $children = Get-ChildItem -LiteralPath $dst -Force -Recurse
+                foreach ($c in $children) {
+                    if (-not $c.PSIsContainer) {
+                        $excluded = $false
+                        if (Is-Excluded $c.FullName) { $excluded = $true }
+                        else {
+                            $name = $c.Name.ToLowerInvariant()
+                            foreach ($e in $ExcludeFiles) {
+                                $en = [System.IO.Path]::GetFileName((Canonical-Rel $e)).ToLowerInvariant()
+                                if ($en -eq $name) { $excluded = $true; break }
+                            }
+                        }
+                        if ($excluded) {
+                            Write-Info ("Skip delete (excluded): {0}" -f (Make-Rel $c.FullName))
+                        } else {
+                            Remove-Item -LiteralPath $c.FullName -Force -ErrorAction SilentlyContinue
+                            Write-Info ("Deleted: {0}" -f (Make-Rel $c.FullName))
+                        }
+                    }
+                }
+            } else {
+                if (Is-Excluded $dst) {
+                    Write-Info ("Skip delete (excluded): {0}" -f (Make-Rel $dst))
+                } else {
+                    Remove-Item -LiteralPath $dst -Force -ErrorAction SilentlyContinue
+                    Write-Info ("Deleted (missing upstream): {0}" -f (Make-Rel $dst))
+                }
+            }
         } else {
             Write-Warn "Upstream missing path: $Rel (nothing to sync)"
         }
