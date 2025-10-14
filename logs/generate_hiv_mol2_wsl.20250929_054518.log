@@ -1,0 +1,59 @@
+[TRACE] generate_hiv_mol2_wsl.sh:28(main) log_debug LD_PRELOAD=
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) [[ 1 = 1 ]]
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) printf '[DBG ] %s\n' LD_PRELOAD=
+[DBG ] LD_PRELOAD=
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) true
+[TRACE] generate_hiv_mol2_wsl.sh:29(main) log_debug LD_LIBRARY_PATH=
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) [[ 1 = 1 ]]
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) printf '[DBG ] %s\n' LD_LIBRARY_PATH=
+[DBG ] LD_LIBRARY_PATH=
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) true
+[TRACE] generate_hiv_mol2_wsl.sh:31(main) log_info 日志文件：logs/generate_hiv_mol2_wsl.20250929_054518.log
+[TRACE] generate_hiv_mol2_wsl.sh:11(log_info) printf '[INFO] %s\n' 日志文件：logs/generate_hiv_mol2_wsl.20250929_054518.log
+[INFO] 日志文件：logs/generate_hiv_mol2_wsl.20250929_054518.log
+[[TRACE] generate_hiv_mol2_wsl.sh:32(main) date
+[TRACE] generate_hiv_mol2_wsl.sh:32(main) log_debug '日期：Mon Sep 29 05:45:18 CST 2025'
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) [[ 1 = 1 ]]
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) printf '[DBG ] %s\n' '日期：Mon Sep 29 05:45:18 CST 2025'
+[DBG ] 日期：Mon Sep 29 05:45:18 CST 2025
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) true
+[[TRACE] generate_hiv_mol2_wsl.sh:33(main) uname -a
+[TRACE] generate_hiv_mol2_wsl.sh:33(main) log_debug '内核：Linux iMacWin 5.15.167.4-microsoft-standard-WSL2 #1 SMP Tue Nov 5 00:21:55 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux'
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) [[ 1 = 1 ]]
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) printf '[DBG ] %s\n' '内核：Linux iMacWin 5.15.167.4-microsoft-standard-WSL2 #1 SMP Tue Nov 5 00:21:55 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux'
+[DBG ] 内核：Linux iMacWin 5.15.167.4-microsoft-standard-WSL2 #1 SMP Tue Nov 5 00:21:55 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) true
+[TRACE] generate_hiv_mol2_wsl.sh:34(main) command -v lsb_release
+[[TRACE] generate_hiv_mol2_wsl.sh:34(main) lsb_release -ds
+[TRACE] generate_hiv_mol2_wsl.sh:34(main) log_debug '发行版：Ubuntu 20.04.6 LTS'
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) [[ 1 = 1 ]]
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) printf '[DBG ] %s\n' '发行版：Ubuntu 20.04.6 LTS'
+[DBG ] 发行版：Ubuntu 20.04.6 LTS
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) true
+[TRACE] generate_hiv_mol2_wsl.sh:35(main) grep -qi microsoft /proc/version
+[TRACE] generate_hiv_mol2_wsl.sh:35(main) log_debug '检测到 WSL 环境'
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) [[ 1 = 1 ]]
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) printf '[DBG ] %s\n' '检测到 WSL 环境'
+[DBG ] 检测到 WSL 环境
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) true
+[TRACE] generate_hiv_mol2_wsl.sh:36(main) command -v conda
+[TRACE] generate_hiv_mol2_wsl.sh:78(main) INPUT=
+[TRACE] generate_hiv_mol2_wsl.sh:79(main) SMILES=
+[TRACE] generate_hiv_mol2_wsl.sh:80(main) RESNAME=LIG
+[TRACE] generate_hiv_mol2_wsl.sh:81(main) CHARGE=0
+[TRACE] generate_hiv_mol2_wsl.sh:82(main) OUT=hiv.mol2
+[TRACE] generate_hiv_mol2_wsl.sh:83(main) PH=7.4
+[TRACE] generate_hiv_mol2_wsl.sh:85(main) [[ 0 -gt 0 ]]
+[TRACE] generate_hiv_mol2_wsl.sh:99(main) need_cmd antechamber
+[TRACE] generate_hiv_mol2_wsl.sh:67(need_cmd) command -v antechamber
+[TRACE] generate_hiv_mol2_wsl.sh:67(need_cmd) echo '[ERR] 缺少依赖：antechamber'
+[ERR] 缺少依赖：antechamber
+[TRACE] generate_hiv_mol2_wsl.sh:67(need_cmd) exit 1
+[TRACE] generate_hiv_mol2_wsl.sh:1(need_cmd) rc=1
+[[TRACE] generate_hiv_mol2_wsl.sh:1(need_cmd) date +%s
+[TRACE] generate_hiv_mol2_wsl.sh:1(need_cmd) _end_ts=1759095918
+[TRACE] generate_hiv_mol2_wsl.sh:1(need_cmd) dur=0
+[TRACE] generate_hiv_mol2_wsl.sh:2(need_cmd) ((  rc==0  ))
+[TRACE] generate_hiv_mol2_wsl.sh:2(need_cmd) log_err '脚本失败(rc=1)，耗时 0s'
+[TRACE] generate_hiv_mol2_wsl.sh:13(log_err) printf '[ERR ] %s\n' '脚本失败(rc=1)，耗时 0s'
+[ERR ] 脚本失败(rc=1)，耗时 0s

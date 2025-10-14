@@ -1,0 +1,27 @@
+; Minimal GROMACS topology (OPLS-AA + TIP3P + OPLS-mapped ligand)
+; 使用前：根据你的体系编辑 [ molecules ] 的数量，并确保坐标文件包含这些分子。
+
+#include "oplsaa.ff/forcefield.itp"
+#include "oplsaa.ff/tip3p.itp"
+; 如需离子参数：
+; #include "oplsaa.ff/ions.itp"
+
+; 配体（acpype 生成，OPLS 版本）
+#include "LIG.acpype/LIG_GMX_OPLS.itp"
+; 可选位置约束：
+; #ifdef POSRES
+; #include "LIG.acpype/posre_LIG.itp"
+; #endif
+
+[ system ]
+; Title
+Protein-ligand system (OPLS-AA + TIP3P + OPLS ligand)
+
+[ molecules ]
+; name  number
+;Protein  1
+LIG      1
+;SOL   XXXX
+;NA       X
+;CL       X
+

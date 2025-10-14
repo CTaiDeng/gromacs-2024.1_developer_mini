@@ -1,0 +1,160 @@
+[TRACE] generate_hiv_mol2_wsl.sh:28(main) log_debug LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libGLEW.so
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) [[ 1 = 1 ]]
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) printf '[DBG ] %s\n' LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libGLEW.so
+[DBG ] LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libGLEW.so
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) true
+[TRACE] generate_hiv_mol2_wsl.sh:29(main) log_debug LD_LIBRARY_PATH=/home/coder/anaconda3/lib:/home//coder/.mujoco/mujoco210/bin:/usr/lib/nvidia
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) [[ 1 = 1 ]]
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) printf '[DBG ] %s\n' LD_LIBRARY_PATH=/home/coder/anaconda3/lib:/home//coder/.mujoco/mujoco210/bin:/usr/lib/nvidia
+[DBG ] LD_LIBRARY_PATH=/home/coder/anaconda3/lib:/home//coder/.mujoco/mujoco210/bin:/usr/lib/nvidia
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) true
+[TRACE] generate_hiv_mol2_wsl.sh:31(main) log_info 日志文件：logs/generate_hiv_mol2_wsl.20250928_152618.log
+[TRACE] generate_hiv_mol2_wsl.sh:11(log_info) printf '[INFO] %s\n' 日志文件：logs/generate_hiv_mol2_wsl.20250928_152618.log
+[INFO] 日志文件：logs/generate_hiv_mol2_wsl.20250928_152618.log
+[[TRACE] generate_hiv_mol2_wsl.sh:32(main) date
+[TRACE] generate_hiv_mol2_wsl.sh:32(main) log_debug '日期：Sun Sep 28 15:26:18 CST 2025'
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) [[ 1 = 1 ]]
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) printf '[DBG ] %s\n' '日期：Sun Sep 28 15:26:18 CST 2025'
+[DBG ] 日期：Sun Sep 28 15:26:18 CST 2025
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) true
+[[TRACE] generate_hiv_mol2_wsl.sh:33(main) uname -a
+[TRACE] generate_hiv_mol2_wsl.sh:33(main) log_debug '内核：Linux iMacWin 5.15.167.4-microsoft-standard-WSL2 #1 SMP Tue Nov 5 00:21:55 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux'
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) [[ 1 = 1 ]]
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) printf '[DBG ] %s\n' '内核：Linux iMacWin 5.15.167.4-microsoft-standard-WSL2 #1 SMP Tue Nov 5 00:21:55 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux'
+[DBG ] 内核：Linux iMacWin 5.15.167.4-microsoft-standard-WSL2 #1 SMP Tue Nov 5 00:21:55 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) true
+[TRACE] generate_hiv_mol2_wsl.sh:34(main) command -v lsb_release
+[[TRACE] generate_hiv_mol2_wsl.sh:34(main) lsb_release -ds
+[TRACE] generate_hiv_mol2_wsl.sh:34(main) log_debug '发行版：Ubuntu 20.04.6 LTS'
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) [[ 1 = 1 ]]
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) printf '[DBG ] %s\n' '发行版：Ubuntu 20.04.6 LTS'
+[DBG ] 发行版：Ubuntu 20.04.6 LTS
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) true
+[TRACE] generate_hiv_mol2_wsl.sh:35(main) grep -qi microsoft /proc/version
+[TRACE] generate_hiv_mol2_wsl.sh:35(main) log_debug '检测到 WSL 环境'
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) [[ 1 = 1 ]]
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) printf '[DBG ] %s\n' '检测到 WSL 环境'
+[DBG ] 检测到 WSL 环境
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) true
+[TRACE] generate_hiv_mol2_wsl.sh:36(main) command -v conda
+[[TRACE] generate_hiv_mol2_wsl.sh:36(main) conda info --envs
+[[TRACE] generate_hiv_mol2_wsl.sh:36(main) sed -n 1,80p
+[TRACE] generate_hiv_mol2_wsl.sh:36(main) log_debug 'conda 环境：
+# conda environments:
+#
+base                   /home/coder/anaconda3
+amber                * /home/coder/anaconda3/envs/amber
+linux_flower_pig_py310   /home/coder/anaconda3/envs/linux_flower_pig_py310
+linux_odoo_py310       /home/coder/anaconda3/envs/linux_odoo_py310
+linux_odoo_py37        /home/coder/anaconda3/envs/linux_odoo_py37
+linux_openai_baselines_py36_cpu   /home/coder/anaconda3/envs/linux_openai_baselines_py36_cpu
+linux_softguibot_py39_tf_2_10_cpu   /home/coder/anaconda3/envs/linux_softguibot_py39_tf_2_10_cpu'
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) [[ 1 = 1 ]]
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) printf '[DBG ] %s\n' 'conda 环境：
+# conda environments:
+#
+base                   /home/coder/anaconda3
+amber                * /home/coder/anaconda3/envs/amber
+linux_flower_pig_py310   /home/coder/anaconda3/envs/linux_flower_pig_py310
+linux_odoo_py310       /home/coder/anaconda3/envs/linux_odoo_py310
+linux_odoo_py37        /home/coder/anaconda3/envs/linux_odoo_py37
+linux_openai_baselines_py36_cpu   /home/coder/anaconda3/envs/linux_openai_baselines_py36_cpu
+linux_softguibot_py39_tf_2_10_cpu   /home/coder/anaconda3/envs/linux_softguibot_py39_tf_2_10_cpu'
+[DBG ] conda 环境：
+# conda environments:
+#
+base                   /home/coder/anaconda3
+amber                * /home/coder/anaconda3/envs/amber
+linux_flower_pig_py310   /home/coder/anaconda3/envs/linux_flower_pig_py310
+linux_odoo_py310       /home/coder/anaconda3/envs/linux_odoo_py310
+linux_odoo_py37        /home/coder/anaconda3/envs/linux_odoo_py37
+linux_openai_baselines_py36_cpu   /home/coder/anaconda3/envs/linux_openai_baselines_py36_cpu
+linux_softguibot_py39_tf_2_10_cpu   /home/coder/anaconda3/envs/linux_softguibot_py39_tf_2_10_cpu
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) true
+[TRACE] generate_hiv_mol2_wsl.sh:78(main) INPUT=
+[TRACE] generate_hiv_mol2_wsl.sh:79(main) SMILES=
+[TRACE] generate_hiv_mol2_wsl.sh:80(main) RESNAME=LIG
+[TRACE] generate_hiv_mol2_wsl.sh:81(main) CHARGE=0
+[TRACE] generate_hiv_mol2_wsl.sh:82(main) OUT=hiv.mol2
+[TRACE] generate_hiv_mol2_wsl.sh:83(main) PH=7.4
+[TRACE] generate_hiv_mol2_wsl.sh:85(main) [[ 0 -gt 0 ]]
+[TRACE] generate_hiv_mol2_wsl.sh:99(main) need_cmd antechamber
+[TRACE] generate_hiv_mol2_wsl.sh:67(need_cmd) command -v antechamber
+[[TRACE] generate_hiv_mol2_wsl.sh:101(main) mktemp -d
+[TRACE] generate_hiv_mol2_wsl.sh:101(main) tmpdir=/tmp/tmp.jSBJ7TnpnC
+[TRACE] generate_hiv_mol2_wsl.sh:103(main) trap cleanup EXIT
+[TRACE] generate_hiv_mol2_wsl.sh:105(main) seed_sdf=/tmp/tmp.jSBJ7TnpnC/seed.sdf
+[TRACE] generate_hiv_mol2_wsl.sh:166(main) [[ -n '' ]]
+[TRACE] generate_hiv_mol2_wsl.sh:168(main) [[ -n '' ]]
+[TRACE] generate_hiv_mol2_wsl.sh:173(main) [[ -f hiv.smi ]]
+[TRACE] generate_hiv_mol2_wsl.sh:174(main) [[ -f hiv.sdf ]]
+[TRACE] generate_hiv_mol2_wsl.sh:175(main) [[ -f hiv.pdb ]]
+[TRACE] generate_hiv_mol2_wsl.sh:175(main) INPUT=hiv.pdb
+[TRACE] generate_hiv_mol2_wsl.sh:175(main) generate_seed_from_file hiv.pdb
+[TRACE] generate_hiv_mol2_wsl.sh:139(generate_seed_from_file) local in=hiv.pdb
+[[TRACE] generate_hiv_mol2_wsl.sh:140(generate_seed_from_file) wc -c
+[TRACE] generate_hiv_mol2_wsl.sh:140(generate_seed_from_file) log_debug '输入文件：hiv.pdb 大小：190431 字节  前几行：'
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) [[ 1 = 1 ]]
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) printf '[DBG ] %s\n' '输入文件：hiv.pdb 大小：190431 字节  前几行：'
+[DBG ] 输入文件：hiv.pdb 大小：190431 字节  前几行：
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) true
+[TRACE] generate_hiv_mol2_wsl.sh:141(generate_seed_from_file) sed -n 1,10p hiv.pdb
+[TRACE] generate_hiv_mol2_wsl.sh:141(generate_seed_from_file) sed 's/^/[IN ] /'
+[IN ] HEADER    HYDROLASE/HYDROLASE INHIBITOR           14-FEB-94   1HVR              
+[IN ] TITLE     RATIONAL DESIGN OF POTENT, BIOAVAILABLE, NONPEPTIDE CYCLIC UREAS AS   
+[IN ] TITLE    2 HIV PROTEASE INHIBITORS                                              
+[IN ] COMPND    MOL_ID: 1;                                                            
+[IN ] COMPND   2 MOLECULE: HIV-1 PROTEASE;                                            
+[IN ] COMPND   3 CHAIN: A, B;                                                         
+[IN ] COMPND   4 ENGINEERED: YES                                                      
+[IN ] SOURCE    MOL_ID: 1;                                                            
+[IN ] SOURCE   2 ORGANISM_SCIENTIFIC: HUMAN IMMUNODEFICIENCY VIRUS 1;                 
+[IN ] SOURCE   3 ORGANISM_TAXID: 11676;                                               
+[TRACE] generate_hiv_mol2_wsl.sh:142(generate_seed_from_file) has_cmd obabel
+[TRACE] generate_hiv_mol2_wsl.sh:71(has_cmd) command -v obabel
+[TRACE] generate_hiv_mol2_wsl.sh:143(generate_seed_from_file) log_info '使用 openbabel 统一转换为3D SDF (pH=7.4)'
+[TRACE] generate_hiv_mol2_wsl.sh:11(log_info) printf '[INFO] %s\n' '使用 openbabel 统一转换为3D SDF (pH=7.4)'
+[INFO] 使用 openbabel 统一转换为3D SDF (pH=7.4)
+[[TRACE] generate_hiv_mol2_wsl.sh:144(generate_seed_from_file) command -v obabel
+[TRACE] generate_hiv_mol2_wsl.sh:144(generate_seed_from_file) log_debug 'which obabel: /home/coder/anaconda3/envs/amber/bin/obabel'
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) [[ 1 = 1 ]]
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) printf '[DBG ] %s\n' 'which obabel: /home/coder/anaconda3/envs/amber/bin/obabel'
+[DBG ] which obabel: /home/coder/anaconda3/envs/amber/bin/obabel
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) true
+[[TRACE] generate_hiv_mol2_wsl.sh:145(generate_seed_from_file) obabel -V
+[[TRACE] generate_hiv_mol2_wsl.sh:145(generate_seed_from_file) tr '\n' ' '
+[TRACE] generate_hiv_mol2_wsl.sh:145(generate_seed_from_file) log_debug 'obabel 版本：Open Babel 3.1.0 -- Nov 30 2023 -- 20:41:23 '
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) [[ 1 = 1 ]]
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) printf '[DBG ] %s\n' 'obabel 版本：Open Babel 3.1.0 -- Nov 30 2023 -- 20:41:23 '
+[DBG ] obabel 版本：Open Babel 3.1.0 -- Nov 30 2023 -- 20:41:23 
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) true
+[TRACE] generate_hiv_mol2_wsl.sh:146(generate_seed_from_file) run_with_timeout 600 env -u LD_PRELOAD -u LD_LIBRARY_PATH obabel -v hiv.pdb -O /tmp/tmp.jSBJ7TnpnC/seed.sdf --gen3d -p 7.4 -h
+[TRACE] generate_hiv_mol2_wsl.sh:109(run_with_timeout) local t=600
+[TRACE] generate_hiv_mol2_wsl.sh:109(run_with_timeout) shift
+[[TRACE] generate_hiv_mol2_wsl.sh:110(run_with_timeout) date +%s
+[TRACE] generate_hiv_mol2_wsl.sh:110(run_with_timeout) local started=1759044380
+[TRACE] generate_hiv_mol2_wsl.sh:111(run_with_timeout) log_debug '运行命令（超时600s）：env -u LD_PRELOAD -u LD_LIBRARY_PATH obabel -v hiv.pdb -O /tmp/tmp.jSBJ7TnpnC/seed.sdf --gen3d -p 7.4 -h'
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) [[ 1 = 1 ]]
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) printf '[DBG ] %s\n' '运行命令（超时600s）：env -u LD_PRELOAD -u LD_LIBRARY_PATH obabel -v hiv.pdb -O /tmp/tmp.jSBJ7TnpnC/seed.sdf --gen3d -p 7.4 -h'
+[DBG ] 运行命令（超时600s）：env -u LD_PRELOAD -u LD_LIBRARY_PATH obabel -v hiv.pdb -O /tmp/tmp.jSBJ7TnpnC/seed.sdf --gen3d -p 7.4 -h
+[TRACE] generate_hiv_mol2_wsl.sh:14(log_debug) true
+[TRACE] generate_hiv_mol2_wsl.sh:113(run_with_timeout) timeout --preserve-status 600 stdbuf -oL -eL env -u LD_PRELOAD -u LD_LIBRARY_PATH obabel -v hiv.pdb -O /tmp/tmp.jSBJ7TnpnC/seed.sdf --gen3d -p 7.4 -h
+No input file or format spec or possibly a misplaced option.
+Most options must come after the input files. (-i -o -O -m can be anywhwere.)
+
+Open Babel 3.1.0 -- Nov 30 2023 -- 20:41:23
+Usage:
+obabel [-i<input-type>] <infilename> [-o<output-type>] -O<outfilename> [Options]
+Try  -H option for more information.
+[TRACE] generate_hiv_mol2_wsl.sh:114(run_with_timeout) local rc=0
+[TRACE] generate_hiv_mol2_wsl.sh:115(run_with_timeout) log_err '命令失败/超时(rc=0)：env -u LD_PRELOAD -u LD_LIBRARY_PATH obabel -v hiv.pdb -O /tmp/tmp.jSBJ7TnpnC/seed.sdf --gen3d -p 7.4 -h'
+[TRACE] generate_hiv_mol2_wsl.sh:13(log_err) printf '[ERR ] %s\n' '命令失败/超时(rc=0)：env -u LD_PRELOAD -u LD_LIBRARY_PATH obabel -v hiv.pdb -O /tmp/tmp.jSBJ7TnpnC/seed.sdf --gen3d -p 7.4 -h'
+[ERR ] 命令失败/超时(rc=0)：env -u LD_PRELOAD -u LD_LIBRARY_PATH obabel -v hiv.pdb -O /tmp/tmp.jSBJ7TnpnC/seed.sdf --gen3d -p 7.4 -h
+[TRACE] generate_hiv_mol2_wsl.sh:116(run_with_timeout) return 0
+[TRACE] generate_hiv_mol2_wsl.sh:148(generate_seed_from_file) [[ ! -s /tmp/tmp.jSBJ7TnpnC/seed.sdf ]]
+[TRACE] generate_hiv_mol2_wsl.sh:149(generate_seed_from_file) log_err 'openbabel 转换后 seed SDF 为空：/tmp/tmp.jSBJ7TnpnC/seed.sdf'
+[TRACE] generate_hiv_mol2_wsl.sh:13(log_err) printf '[ERR ] %s\n' 'openbabel 转换后 seed SDF 为空：/tmp/tmp.jSBJ7TnpnC/seed.sdf'
+[ERR ] openbabel 转换后 seed SDF 为空：/tmp/tmp.jSBJ7TnpnC/seed.sdf
+[TRACE] generate_hiv_mol2_wsl.sh:150(generate_seed_from_file) exit 2
+[TRACE] generate_hiv_mol2_wsl.sh:1(generate_seed_from_file) cleanup
+[TRACE] generate_hiv_mol2_wsl.sh:102(cleanup) rm -rf /tmp/tmp.jSBJ7TnpnC

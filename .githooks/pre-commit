@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+# Pre-commit hook (no-op by policy)
+
+set -eu
+
+# Per project policy, hooks must not modify or lint docs/code automatically.
+# All compliance and formatting steps are manual via scripts under my_scripts/**.
+
+exit 0

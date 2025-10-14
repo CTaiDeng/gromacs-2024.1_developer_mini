@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Git hook: prepare-commit-msg
+# 当提交信息为空或为“update”时，自动调用脚本生成提交信息。
+
+MSG_FILE="$1"
+COMMIT_SOURCE="${2:-}"
+SHA1="${3:-}"
+
+# 跳过合并/压缩提交
+case "$COMMIT_SOURCE" in
+  merge|squash)
+    exit 0 ;;
+esac
+
+# 统一编码，减少中文乱码
+export PYTHONUTF8=1
+export PYTHONIOENCODING=UTF-8
+export LC_ALL="${LC_ALL:-C.UTF-8}"
+export LANG="${LANG:-C.UTF-8}"
+export COMMIT_MSG_LANG=zh
+
+# 将可能已存在于外部环境的 API Key 透传给子进程（若不存在则为空）
+export GEMINI_API_KEY="${GEMINI_API_KEY-}"
+export GOOGLE_API_KEY="${GOOGLE_API_KEY-}"
+export GOOGLEAI_API_KEY="${GOOGLEAI_API_KEY-}"
+
+# 读取现有消息（去掉注释与首尾空白）
+CONTENT=""
+# 注意 Windows CRLF 处理
+if [[ -f "$MSG_FILE" ]]; then
+  CONTENT=$(sed '/^#/d' "$MSG_FILE" | tr -d '\r' | sed 's/^\s\+//;s/\s\+$//') || CONTENT=""
+fi
+shopt -s nocasematch || true
+IS_UPDATE=0
+if [[ -z "$CONTENT" || "$CONTENT" == "update" ]]; then
+  IS_UPDATE=1
+fi
+shopt -u nocasematch || true
+
+if [[ $IS_UPDATE -eq 1 ]]; then
+  REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+  SCRIPT_PATH="$REPO_ROOT/my_scripts/gen_commit_msg_googleai.py"
+
+  if [[ -f "$SCRIPT_PATH" ]]; then
+    # 选择 python 解释器：优先本地 .venv
+    if [[ -x "$REPO_ROOT/.venv/Scripts/python.exe" ]]; then
+      PY="$REPO_ROOT/.venv/Scripts/python.exe"
+    elif [[ -x "$REPO_ROOT/.venv/bin/python" ]]; then
+      PY="$REPO_ROOT/.venv/bin/python"
+    elif command -v python3 >/dev/null 2>&1; then
+      PY=python3
+    elif command -v python >/dev/null 2>&1; then
+      PY=python
+    elif command -v py >/dev/null 2>&1; then
+      PY="py -3"
+    else
+      PY=""
+    fi
+
+    if [[ -n "$PY" ]]; then
+      # 运行生成器并捕获输出；失败不阻塞提交
+      if [[ "${COMMIT_MSG_DEBUG:-0}" == "1" ]]; then
+        OUT=$("$PY" "$SCRIPT_PATH" || true)
+      else
+        OUT=$("$PY" "$SCRIPT_PATH" 2>/dev/null || true)
+      fi
+      OUT_TRIM=$(printf '%s' "$OUT" | sed 's/^\s\+//;s/\s\+$//')
+      if [[ -n "$OUT_TRIM" ]]; then
+        printf '%s\n' "$OUT_TRIM" > "$MSG_FILE"
+      fi
+    else
+      # Windows 兼容：尝试通过 cmd.exe 调用 py -3（将路径转换为 Windows 形式）
+      if command -v cmd.exe >/dev/null 2>&1; then
+        W_SCRIPT="$SCRIPT_PATH"
+        if command -v cygpath >/dev/null 2>&1; then
+          W_SCRIPT="$(cygpath -w "$SCRIPT_PATH" 2>/dev/null || echo "$SCRIPT_PATH")"
+        fi
+        if [[ "${COMMIT_MSG_DEBUG:-0}" == "1" ]]; then
+          OUT=$(cmd.exe /c py -3 "$W_SCRIPT" || true)
+        else
+          OUT=$(cmd.exe /c py -3 "$W_SCRIPT" 2>/dev/null || true)
+        fi
+        OUT_TRIM=$(printf '%s' "$OUT" | sed 's/^\s\+//;s/\s\+$//')
+        if [[ -n "$OUT_TRIM" ]]; then
+          printf '%s\n' "$OUT_TRIM" > "$MSG_FILE"
+        fi
+      fi
+    fi
+  fi
+
+  # 若仍为空则写入占位符
+  CONTENT_NEW=$(sed '/^#/d' "$MSG_FILE" 2>/dev/null | tr -d '\r' | sed 's/^\s\+//;s/\s\+$//' || true)
+  if [[ -z "$CONTENT_NEW" ]]; then
+    printf '%s\n' "update" > "$MSG_FILE"
+  fi
+fi
+
+exit 0

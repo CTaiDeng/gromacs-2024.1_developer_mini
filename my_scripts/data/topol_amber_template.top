@@ -1,0 +1,28 @@
+; Minimal GROMACS topology (AMBER14SB + TIP3P + GAFF2 ligand)
+; 使用前：根据你的体系编辑 [ molecules ] 的数量，并确保坐标文件包含这些分子。
+
+#include "amber14sb.ff/forcefield.itp"
+#include "amber14sb.ff/tip3p.itp"
+; 如需离子参数（推荐与 gmx solvate/ions 搭配）：
+; #include "amber14sb.ff/ions.itp"
+
+; 配体（acpype 生成，GAFF2/AMBER 版本）
+#include "LIG.acpype/LIG_GMX.itp"
+; 如需对配体启用位置约束，可在 mdp 中定义 -DPOSRES
+; #ifdef POSRES
+; #include "LIG.acpype/posre_LIG.itp"
+; #endif
+
+[ system ]
+; Title
+Protein-ligand system (AMBER14SB + TIP3P + GAFF2)
+
+[ molecules ]
+; name  number
+; 典型蛋白残基组装后生成的条目名通常为 Protein_chain_A 等，如使用 pdb2gmx 结果请对应修改
+;Protein  1
+LIG      1
+;SOL   XXXX   ; 用实际水分子数替换
+;NA       X   ; 可选：正离子个数
+;CL       X   ; 可选：负离子个数
+
