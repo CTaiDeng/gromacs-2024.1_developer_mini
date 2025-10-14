@@ -7,14 +7,13 @@
 # See https://www.gnu.org/licenses/gpl-3.0.html for details.
 
 """
-使用 Google Generative AI（Gemini）或离线规则生成提交信息摘要。
+使用 Google Generative AI（Gemini，可选）对已暂存改动生成提交信息摘要。
 
 环境变量
-- GEMINI_API_KEY / GOOGLE_API_KEY / GOOGLEAI_API_KEY：Google AI Studio API Key（可选）。
+- GEMINI_API_KEY 或 GOOGLE_API_KEY：Google AI Studio API Key（可选）
 
-说明
-- 提交信息生成时会忽略外部知识库目录（my_docs/project_docs/kernel_reference），
-  由 my_scripts/docs_whitelist.json 控制。
+注意
+- 提交信息生成会忽略外部知识参考目录：my_docs/project_docs/kernel_reference（由 my_scripts/docs_whitelist.json 配置）。
 """
 
 from __future__ import annotations
@@ -85,21 +84,21 @@ def collect_diff_filtered(max_patch_chars: int = 8000) -> tuple[str, str]:
 
 
 PROMPT_TMPL = (
-    "请阅读以下 Git 变更，生成提交信息：\n"
-    "- 第一行不超过 60 字，格式 `type: subject`，type ∈ [feat, fix, docs, chore, refactor, test, perf, build, ci]\n"
+    "请阅读已暂存的 Git 变更并生成提交信息：\n"
+    "- 第一行不超过 60 字，形如 `type: subject`，type ∈ [feat, fix, docs, chore, refactor, test, perf, build, ci]\n"
     "- 然后列出 1-3 条要点，每条一行，以 `- ` 开头\n\n"
-    "文件清单（name-status）：\n{stat}\n\n"
+    "变更清单（name-status）：\n{stat}\n\n"
     "差异片段（可能已截断）：\n{patch}\n"
 )
 
 
 def build_prompt(stat: str, patch: str, lang: str) -> str:
     lang = (lang or "zh").lower()
-    # 开头给出中文要求，避免模型输出多余说明
+    # 始终要求以简体中文回答，并在提示前加入中文说明
     chs_instr = (
-        "请直接给出符合规范的中文提交信息，不要添加额外说明。\n"
-        "第一行最长 60 字，格式 `type: subject`，type ∈ {feat, fix, docs, chore, refactor, test, perf, build, ci}。\n"
-        "然后列出 1-3 条要点，每条以 `- ` 开头。\n\n"
+        "请使用简体中文输出提交信息，不要使用繁体字或英文。\n"
+        "首行≤60个字符，格式 `type: subject`，type ∈ {feat, fix, docs, chore, refactor, test, perf, build, ci}；"
+        "随后列出 1-3 条要点，每条以 `- ` 开头。\n\n"
     )
     return chs_instr + PROMPT_TMPL.format(stat=stat, patch=patch)
 
@@ -168,7 +167,7 @@ def generate_with_gemini(prompt: str) -> Optional[str]:
         or os.environ.get("GOOGLEAI_API_KEY")
     )
     if not api_key:
-        _debug("no API key in GEMINI_API_KEY/GOOGLE_API_KEY/GOOGLEAI_API_KEY; try offline fallback")
+        _debug("no API key in GEMINI_API_KEY/GOOGLE_API_KEY/GOOGLEAI_API_KEY; fallback to 'update'")
         return None
     try:
         import google.generativeai as genai  # type: ignore
@@ -198,116 +197,43 @@ def generate_with_gemini(prompt: str) -> Optional[str]:
         return _generate_with_gemini_rest(prompt)
 
 
-def _guess_type_from_paths(files: list[str]) -> str:
-    if not files:
-        return "chore"
-    lower = [f.lower() for f in files]
-    # 纯文档更改
-    doc_exts = (".md", ".rst", ".txt")
-    if all(f.endswith(doc_exts) or f.startswith(("docs/", "my_docs/")) or "readme" in f for f in lower):
-        return "docs"
-    # 测试主导
-    if any("test" in f or f.startswith("tests/") for f in lower):
-        return "test"
-    # 构建/配置
-    if any(f.endswith(('.cmake', 'cmakelists.txt', '.yml', '.yaml', '.toml', '.json')) for f in lower):
-        return "build"
-    # 代码变更
-    if any(f.endswith(('.c', '.cc', '.cpp', '.cu', '.cuh', '.h', '.hpp')) for f in lower):
-        return "feat"
-    if any(f.endswith(('.py', '.ps1', '.sh')) for f in lower):
-        return "chore"
-    return "chore"
-
-
-def _top_components(files: list[str], k: int = 3) -> list[str]:
-    comps: list[str] = []
-    seen: set[str] = set()
-    for f in files:
-        part = f.split('/', 1)[0]
-        if part and part not in seen:
-            seen.add(part)
-            comps.append(part)
-        if len(comps) >= k:
-            break
-    return comps
-
-
-def generate_offline(stat: str, patch: str) -> Optional[str]:
-    files: list[str] = []
-    adds = mods = dels = 0
-    for line in (stat or "").splitlines():
-        line = line.strip()
-        if not line:
+def is_comment_only_patch(patch: str) -> bool:
+    if not patch.strip():
+        return False
+    has_change = False
+    for raw in patch.splitlines():
+        if not raw:
             continue
-        # format: "M\tpath" or "M path"
-        parts = line.split('\t') if '\t' in line else line.split(None, 1)
-        if not parts:
-            continue
-        code = parts[0].strip().upper()
-        path = parts[1].strip() if len(parts) > 1 else ''
-        if not path:
-            continue
-        files.append(path.replace('\\', '/'))
-        if code.startswith('A'):
-            adds += 1
-        elif code.startswith('D'):
-            dels += 1
-        else:
-            mods += 1
-
-    # 粗略统计行增删
-    plus = minus = 0
-    for raw in (patch or "").splitlines():
         if raw.startswith(('diff --git', 'index ', '--- ', '+++ ', '@@')):
             continue
-        if raw.startswith('+') and not raw.startswith('+++'):
-            plus += 1
-        elif raw.startswith('-') and not raw.startswith('---'):
-            minus += 1
-
-    ctype = _guess_type_from_paths(files)
-    comps = _top_components(files)
-    if not files and not (plus or minus):
-        return None
-
-    if ctype == 'docs':
-        subject = f"更新文档{('（' + '、'.join(comps) + '）') if comps else ''}"
-    elif ctype == 'test':
-        subject = f"完善测试{('（' + '、'.join(comps) + '）') if comps else ''}"
-    elif ctype == 'build':
-        subject = f"构建/配置更新{('（' + '、'.join(comps) + '）') if comps else ''}"
-    elif ctype == 'feat':
-        subject = f"功能/实现更新{('（' + '、'.join(comps) + '）') if comps else ''}"
-    else:
-        subject = f"杂项更新{('（' + '、'.join(comps) + '）') if comps else ''}"
-
-    bullets: list[str] = []
-    bullets.append(f"变更：修改 {mods}，新增 {adds}，删除 {dels}；+{plus}/-{minus} 行")
-    if files:
-        sample = '、'.join(files[:3]) + (" 等" if len(files) > 3 else "")
-        bullets.append(f"涉及：{sample}")
-
-    body = "\n".join([f"{ctype}: {subject}"] + [f"- {b}" for b in bullets])
-    return body.strip()
+        if raw[0] not in ['+', '-']:
+            continue
+        if raw.startswith('+++') or raw.startswith('---'):
+            continue
+        has_change = True
+        line = raw[1:].lstrip()
+        if line == '':
+            continue
+        comment_prefixes = (
+            '#', '//', '/*', '*', '*/', '--', ';', "'''", '"""', 'REM ', 'rem '
+        )
+        if line.startswith(comment_prefixes) or line.startswith('!'):
+            continue
+        return False
+    return has_change
 
 
 def main() -> int:
     stat, patch = collect_diff_filtered()
     # Always try to generate, even for comment-only patches
     if not stat and not patch:
-        # 没有变更：保持兼容返回占位
-        print('chore: update\n- 无文件变更（占位）')
+        print('update')
         return 0
     lang = os.environ.get("COMMIT_MSG_LANG", "zh").lower()
     prompt = build_prompt(stat, patch, lang)
     text = generate_with_gemini(prompt)
     if not text:
-        offline = generate_offline(stat, patch)
-        if offline:
-            print(offline.strip())
-        else:
-            print('chore: update\n- 占位提交（未能生成摘要）')
+        print('update')
         return 0
     print(text.strip())
     return 0
@@ -315,4 +241,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-
