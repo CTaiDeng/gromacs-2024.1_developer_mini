@@ -36,6 +36,24 @@ my_scripts 脚本清单（WSL 专用）
   - 指定 Python 版本（例如 3.10）：`bash my_scripts/fix_cmake_python3_dev_wsl.sh --py 3.10`
   - 指定源码/构建目录：`bash my_scripts/fix_cmake_python3_dev_wsl.sh --source-dir . --build-dir cmake-build-release-wsl`
 
+对齐知识库文档前缀（按文内日期逐秒递延）
+- 规则：`- 日期：YYYY-MM-DD` 为真，前缀为当日 00:00:00 起按标题字典序逐秒递增；非递归；跳过 `kernel_reference/` 与 `LICENSE.md`
+- 默认运行（my_docs/project_docs 与 my_project/.../docs）：
+  - `python3 my_scripts/align_prefix_to_doc_date_v2.py`
+- 指定目录（例如仅知识库）：
+  - `python3 my_scripts/align_prefix_to_doc_date_v2.py --paths my_docs/project_docs`
+- 预览改名（不落盘）：
+  - `python3 my_scripts/align_prefix_to_doc_date_v2.py --paths my_docs/project_docs --dry-run`
+
+对齐知识库文档头部（作者/日期/版本 与空行）
+- 规则：
+  - 头部三行紧随 H1：`- 作者：GaoZheng`、`- 日期：YYYY-MM-DD`、`- 版本：vx.y.z`
+  - 三行之间不留空；头部块后留 1 行空行；若缺“版本”，首次补齐为 `v1.0.0`
+- 运行：
+  - `python3 my_scripts/align_my_documents.py`
+  - 仅在知识库目录中补齐“版本：v1.0.0”并整理头部空行（不改动日期值）：
+    - `python3 my_scripts/fix_project_docs_header_version.py`
+
 数据
 - data/charmm36-jul2021.ff：用于 CHARMM36 力场相关的示例与转换。
 

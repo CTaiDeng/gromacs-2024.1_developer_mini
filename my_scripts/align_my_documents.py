@@ -189,8 +189,12 @@ def ensure_date_in_markdown(md_path: Path, ts: int) -> bool:
     """Ensure the updated header block below the first H1:
     - 作者：GaoZheng
     - 日期：YYYY-MM-DD
+    - 版本：vx.y.z (if missing, initialize to v1.0.0)
 
-    Also migrates legacy single-line date `日期：YYYY年MM月DD日` to the new two-line list.
+    Rules:
+    - No blank lines between 作者/日期/版本 bullets.
+    - Exactly one blank line after the last header bullet (版本 if present, otherwise 日期).
+    - Migrates legacy single-line date `日期：YYYY年MM月DD日` to the ISO bullet.
     Returns True if file content changed.
     """
     try:
@@ -205,6 +209,7 @@ def ensure_date_in_markdown(md_path: Path, ts: int) -> bool:
             break
     author_line = "- 作者：GaoZheng\n"
     date_line_new = f"- 日期：{fmt_date_iso(ts)}\n"
+    version_line_default = "- 版本：v1.0.0\n"
     date_line_old = f"日期：{fmt_date_chs(ts)}\n"
     changed = False
     if title_idx is None:
@@ -214,7 +219,7 @@ def ensure_date_in_markdown(md_path: Path, ts: int) -> bool:
             title = stem.split("_", 1)[1]
         else:
             title = stem
-        new_text = f"# {title}\n{author_line}{date_line_new}\n" + text
+        new_text = f"# {title}\n{author_line}{date_line_new}{version_line_default}\n" + text
         if new_text != text:
             md_path.write_text(new_text, encoding="utf-8")
             return True
@@ -225,10 +230,12 @@ def ensure_date_in_markdown(md_path: Path, ts: int) -> bool:
     patt_author = re.compile(r"^\s*-\s*作者[:：]")
     patt_date_new = re.compile(r"^\s*-\s*日期[:：]\s*\d{4}-\d{2}-\d{2}\s*$")
     patt_date_old = re.compile(r"^\s*日期[:：]\s*\d{4}年\d{2}月\d{2}日\s*$")
+    patt_version = re.compile(r"^\s*-\s*版本[:：]\s*v\d+\.\d+\.\d+\s*$", re.IGNORECASE)
 
     idx_author = None
     idx_date_new = None
     idx_date_old = None
+    idx_version = None
     for k in range(win_start, window_end):
         s = lines[k].strip()
         if idx_author is None and patt_author.match(s):
@@ -237,6 +244,8 @@ def ensure_date_in_markdown(md_path: Path, ts: int) -> bool:
             idx_date_new = k
         if idx_date_old is None and patt_date_old.match(s):
             idx_date_old = k
+        if idx_version is None and patt_version.match(s):
+            idx_version = k
     # Migrate legacy date line to new two-line block
     if idx_date_old is not None and idx_date_new is None:
         # Replace old date with new lines, also ensure author exists before date
@@ -244,9 +253,10 @@ def ensure_date_in_markdown(md_path: Path, ts: int) -> bool:
         del lines[idx_date_old]
         # Recompute insertion pos just after title
         insert_pos = title_idx + 1
-        # Insert author/date new (author first)
+        # Insert author/date/version (author first)
         lines.insert(insert_pos + 0, author_line)
         lines.insert(insert_pos + 1, date_line_new)
+        lines.insert(insert_pos + 2, version_line_default)
         changed = True
         # Clean potential duplicate author nearby
         # Re-scan a small range and collapse duplicates of author/date
@@ -284,6 +294,21 @@ def ensure_date_in_markdown(md_path: Path, ts: int) -> bool:
             lines[idx_author] = author_line
             changed = True
 
+        # Version line: if missing, insert after date; else keep as-is
+        if idx_version is None and idx_date_new is not None:
+            insert_after_version = idx_date_new + 1
+            # Remove any blank between date and where version will be inserted
+            if insert_after_version < len(lines) and lines[insert_after_version].strip() == "":
+                del lines[insert_after_version]
+            lines.insert(insert_after_version, version_line_default)
+            changed = True
+            idx_version = insert_after_version
+        # Ensure no blank between date and version
+        if idx_date_new is not None and idx_version is not None and idx_version == idx_date_new + 2:
+            if lines[idx_date_new + 1].strip() == "":
+                del lines[idx_date_new + 1]
+                changed = True
+
     # Ensure there is exactly one blank line after the title before author/date
     if title_idx is not None:
         # Insert one blank if the next line is not blank
@@ -299,17 +324,17 @@ def ensure_date_in_markdown(md_path: Path, ts: int) -> bool:
             while j + 1 < len(lines) and lines[j].strip() == "" and lines[j + 1].strip() == "":
                 del lines[j + 1]
                 changed = True
-    # Ensure there is a blank line after the date block
-    # Determine end of header block (author + date)
+    # Ensure there is exactly one blank line after the header block (author+date+version)
+    # Determine end of header block
     # Find indices again within small window
     idxs = []
     for k in range(title_idx + 1, min(len(lines), title_idx + 6)):
         s = lines[k].strip()
-        if patt_author.match(s) or patt_date_new.match(s) or patt_date_old.match(s):
+        if patt_author.match(s) or patt_date_new.match(s) or patt_date_old.match(s) or patt_version.match(s):
             idxs.append(k)
     if idxs:
         end_idx = max(idxs)
-        # normalize to exactly one blank after date line
+        # normalize to exactly one blank after the last header bullet
         # insert one blank if next is non-blank
         if end_idx + 1 < len(lines) and lines[end_idx + 1].strip() != "":
             lines.insert(end_idx + 1, "\n")
@@ -355,8 +380,10 @@ def ensure_o3_note(md_path: Path) -> bool:
     # Find date line near title
     date_pat_new = re.compile(r"^\s*-\s*日期[:：]\s*\d{4}-\d{2}-\d{2}\s*$")
     date_pat_old = re.compile(r"^\s*日期[:：]\s*\d{4}年\d{2}月\d{2}日\s*$")
+    version_pat = re.compile(r"^\s*-\s*版本[:：]\s*v\d+\.\d+\.\d+\s*$", re.IGNORECASE)
     date_idx = None
     use_new = False
+    version_idx = None
     if title_idx is not None:
         window_end = min(len(lines), title_idx + 6)
         for k in range(title_idx + 1, window_end):
@@ -364,13 +391,10 @@ def ensure_o3_note(md_path: Path) -> bool:
             if date_pat_new.match(s):
                 date_idx = k
                 use_new = True
-                break
-        if date_idx is None:
-            for k in range(title_idx + 1, window_end):
-                s = lines[k].strip()
-                if date_pat_old.match(s):
-                    date_idx = k
-                    break
+            elif date_pat_old.match(s) and date_idx is None:
+                date_idx = k
+            elif version_pat.match(s):
+                version_idx = k
 
     changed = False
     if title_idx is None or date_idx is None:
@@ -407,8 +431,8 @@ def ensure_o3_note(md_path: Path) -> bool:
                     date_idx = k
                     break
 
-    # Ensure exactly one blank line between date and O3 note
-    base = (date_idx or 0)
+    # Ensure exactly one blank line between header end (prefer version if present) and O3 note
+    base = version_idx if version_idx is not None else (date_idx or 0)
     after = base + 1
     # if next is not blank, add one
     if after >= len(lines) or lines[after].strip() != "":

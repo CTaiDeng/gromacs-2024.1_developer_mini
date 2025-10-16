@@ -16,9 +16,14 @@
 
 ## Git 提交流程约束（强制）
 - Hooks 不进行任何对文档或代码的自动修改/提醒（pre-commit 为 no-op）。
+- 严禁任何 Git Hooks 对知识库进行写入型操作（包括但不限于重命名、改内容、批量格式化）：
+  - 知识库路径：`my_docs/project_docs`（其中 `kernel_reference` 子目录为只读外部参考）。
+  - 知识库的任何变更只能通过“明确指令的脚本执行”或“人工手动操作”。
+  - 允许的 Hooks 行为仅限于与提交元数据相关的非侵入性处理（例如生成提交信息）；不得触碰仓库文件。
 - 合规与格式化通过“手动指令”执行：
   - 文档尾注：`python3 my_scripts/ensure_timestamp_doc_license_footer.py`
   - 文档对齐：`python3 my_scripts/align_prefix_to_doc_date_v2.py`
+  - 文档头部样式（作者/日期/版本）对齐：`python3 my_scripts/align_my_documents.py`
   - 头注整合：`python3 my_scripts/compliance/add_gpl3_headers.py <files/dirs>`
   - 其他审查脚本按需手动运行。
 
@@ -58,6 +63,19 @@
   - 若同一目录内存在相同日期的多个文档（重复日期）：从该日期的“当日第一秒”起依次分配 `00:00:00, 00:00:01, 00:00:02, ...`（按文件名标题字典序升序分配）。
   - 该规范仅约束上述两个目录，且不遍历子目录；`kernel_reference` 不适用。
 - 手动对齐脚本：`my_scripts/align_prefix_to_doc_date_v2.py`（见 my_docs/AGENTS.md 的“自动化脚本（需手动执行）”）。
+
+## 文档头部样式（强制）
+- 适用范围（非递归）：
+  - `my_docs/project_docs`（不含子目录 `kernel_reference`）
+- 头部紧随首个 H1 标题之后的三行项目：
+  - `- 作者：GaoZheng`
+  - `- 日期：YYYY-MM-DD`
+  - `- 版本：vx.y.z`（小写 `v` + 三段语义版本号；首次创建默认为 `v1.0.0`）
+- 约束：
+  - 上述三行之间不得留空行；头部块之后留一行空行。
+  - 若缺少“版本”行，首次补齐为 `- 版本：v1.0.0`；若已存在符合格式的版本行，保持不变。
+- 手动对齐脚本：
+  - `python3 my_scripts/align_my_documents.py`（对齐作者/日期/版本行与头部空行）
 
 - AI 助手知识库引用范围：当未明确指定路径而笼统提及“知识库”时，默认包含 `my_docs/project_docs` 及其全部递归子目录（包含只读子目录 `kernel_reference`）；但仍须遵守其只读属性与上述索引/写入排除规则。如需临时排除此子目录，请在指令或脚本中显式注明。
 
