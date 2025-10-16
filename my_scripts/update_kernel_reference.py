@@ -28,8 +28,11 @@
 
 from __future__ import annotations
 
+import os
 import shutil
+import stat
 import subprocess
+import time
 from pathlib import Path
 
 
@@ -59,7 +62,7 @@ def _empty_directory_keep_root(dir_path: Path) -> None:
     dir_path.mkdir(parents=True, exist_ok=True)
     for child in dir_path.iterdir():
         if child.is_dir():
-            shutil.rmtree(child, ignore_errors=True)
+            _rmtree_force(child)
         else:
             try:
                 child.unlink()
@@ -85,15 +88,68 @@ def _copy_tree_contents(src: Path, dst: Path) -> None:
             shutil.copy2(child, target)
 
 
+# ---- 辅助函数：更强健的删除，解决 Windows 只读/占用问题 ----
+def _on_rm_error(func, path, exc_info):
+    try:
+        os.chmod(path, stat.S_IWRITE)
+    except Exception:
+        pass
+    try:
+        func(path)
+    except Exception:
+        pass
+
+
+def _rmtree_force(path: Path, retries: int = 3, delay: float = 0.3) -> None:
+    """强制删除文件/目录；若不存在则忽略。
+
+    在 Windows/WSL 环境下，文件可能带只读属性或被占用，
+    这里通过 chmod + 重试 提升鲁棒性。
+    """
+    if not path.exists():
+        return
+    # 如果是文件/链接，优先尝试直接删除
+    if path.is_file() or path.is_symlink():
+        try:
+            os.chmod(path, stat.S_IWRITE)
+        except Exception:
+            pass
+        try:
+            path.unlink()
+            return
+        except Exception:
+            # 继续尝试用 rmtree 处理
+            pass
+    for _ in range(retries):
+        try:
+            shutil.rmtree(path, onerror=_on_rm_error)
+        except FileNotFoundError:
+            return
+        except Exception:
+            time.sleep(delay)
+        if not path.exists():
+            return
+        time.sleep(delay)
+    # 仍未删除成功则给出明确提示
+    if path.exists():
+        try:
+            remaining = len(list(path.iterdir()))
+        except Exception:
+            remaining = -1
+        raise RuntimeError(
+            f"无法删除目录：{path}。请关闭占用该目录的程序（资源管理器/杀毒/编辑器）后重试。剩余条目：{remaining}"
+        )
+
+
 def main() -> None:
     _ensure_git_available()
 
     print(f"[1/5] 清空目录: {KERNEL_REF_DIR}")
     _empty_directory_keep_root(KERNEL_REF_DIR)
 
-    if TMP_OUT_DIR.exists():
-        print(f"[2/5] 清理已有临时目录: {TMP_OUT_DIR}")
-        shutil.rmtree(TMP_OUT_DIR, ignore_errors=True)
+    # 无论是否存在，都尝试强制清理，避免 Windows 下只读/占用导致残留
+    print(f"[2/5] 清理已有临时目录: {TMP_OUT_DIR}")
+    _rmtree_force(TMP_OUT_DIR)
 
     print("[3/5] 稀疏克隆远端仓库（仅 master 分支）...")
     _run([
@@ -123,7 +179,7 @@ def main() -> None:
     _copy_tree_contents(src_dir, KERNEL_REF_DIR)
 
     print("[清理] 删除临时目录 out/kernel_reference_only")
-    shutil.rmtree(TMP_OUT_DIR, ignore_errors=True)
+    _rmtree_force(TMP_OUT_DIR)
 
     print("完成：my_docs/project_docs/kernel_reference 已更新。")
 

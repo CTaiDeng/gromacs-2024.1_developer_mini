@@ -21,6 +21,21 @@ my_scripts 脚本清单（WSL 专用）
 - 安装 AmberTools + Open Babel：`bash my_scripts/install_amber_deps_wsl.sh --env amber`
 - 生成 hiv.mol2：`bash my_scripts/generate_hiv_mol2_wsl.sh --smiles "C1=CC=CC=C1C(=O)N" --charge 0 --resname LIG --out hiv.mol2`
 
+- 修复 CMake BLAS/NVPL 告警并配置 BLAS/LAPACK：
+  - 使用 OpenBLAS（推荐）：`bash my_scripts/fix_cmake_blas_nvpl_wsl.sh --mode openblas`
+  - 使用内置 BLAS/LAPACK：`bash my_scripts/fix_cmake_blas_nvpl_wsl.sh --mode internal`
+  - 仅抑制 NVPL 查找：`bash my_scripts/fix_cmake_blas_nvpl_wsl.sh --mode suppress`
+
+- 修复 ImageMagick convert 未授权/不可用（WSL）：
+  - 默认修复并安装依赖：`bash my_scripts/fix_imagemagick_convert_wsl.sh`
+  - 仅策略修复（不安装包）：`bash my_scripts/fix_imagemagick_convert_wsl.sh --no-apt`
+  - 恢复修复前策略：`bash my_scripts/fix_imagemagick_convert_wsl.sh --restore`
+
+- 修复 CMake 找不到 Python3 开发组件（WSL）：
+  - 自动安装 Python 开发头/库并重新配置：`bash my_scripts/fix_cmake_python3_dev_wsl.sh`
+  - 指定 Python 版本（例如 3.10）：`bash my_scripts/fix_cmake_python3_dev_wsl.sh --py 3.10`
+  - 指定源码/构建目录：`bash my_scripts/fix_cmake_python3_dev_wsl.sh --source-dir . --build-dir cmake-build-release-wsl`
+
 数据
 - data/charmm36-jul2021.ff：用于 CHARMM36 力场相关的示例与转换。
 

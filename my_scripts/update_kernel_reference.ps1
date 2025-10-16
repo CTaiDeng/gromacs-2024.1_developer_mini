@@ -22,7 +22,23 @@ $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Resolve-Path (Join-Path $repoRoot '..')
 $script = Join-Path $repoRoot 'my_scripts/update_kernel_reference.py'
 
+# 运行前先删除临时输出目录，避免 git clone 报 already exists and is not an empty directory
+$tmpOutDir = Join-Path $repoRoot 'out' | Join-Path -ChildPath 'kernel_reference_only'
+try {
+    if (Test-Path -LiteralPath $tmpOutDir) {
+        Write-Host "[预清理] 删除临时目录: $tmpOutDir"
+        Remove-Item -LiteralPath $tmpOutDir -Recurse -Force -ErrorAction SilentlyContinue
+        # 再次检查与简单等待，处理 Windows 文件占用
+        Start-Sleep -Milliseconds 200
+        if (Test-Path -LiteralPath $tmpOutDir) {
+            Write-Host "[预清理] 再次尝试强制删除..."
+            Remove-Item -LiteralPath $tmpOutDir -Recurse -Force -ErrorAction Stop
+        }
+    }
+} catch {
+    Write-Warning "预清理临时目录失败：$($_.Exception.Message)；将交由 Python 脚本继续处理。"
+}
+
 $py = Resolve-Python
 & $py $script
 exit $LASTEXITCODE
-
