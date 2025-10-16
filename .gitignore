@@ -3,3 +3,6 @@
 /out/
 /.venv/
 /.pip-cache/
+
+# Windows junction to local NoteBook (ignored)
+/NoteBook/
